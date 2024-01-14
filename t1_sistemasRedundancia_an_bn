@@ -1,0 +1,117 @@
+const int potPin = A0;  
+const int potPin2 = A1; 
+const int potPin3 = A2; 
+int valorPot = 0;  
+int valorPot2 = 0; 
+int valorPot3 = 0; 
+
+int muestras = 7;
+
+int ledRojo = 13; 
+
+int i = 0;
+int j = 0; 
+
+int tLecturas = 0; 
+int tLecturasAnterior = 0; 
+
+int tLecturas2 = 0; 
+int tLecturasAnterior2 = 0; 
+
+
+void setup() {
+  Serial.begin(9600);  
+  pinMode(ledRojo, OUTPUT); 
+}
+
+void loop() {
+  
+  valorPot = analogRead(potPin);  
+  valorPot = valorPot + random(-5, 6);
+  
+  valorPot2 = analogRead(potPin2); 
+  valorPot2 = valorPot2 + random(-5, 6); 
+  
+  valorPot3 = analogRead(potPin3); 
+  valorPot3 = valorPot3 + random(-5, 6); 
+  
+  
+  Serial.print("Lectura original de pot 1: ");
+  Serial.print(analogRead(potPin));
+  Serial.print(", Lectura con ruido de pot 1: ");
+  Serial.println(valorPot);
+  Serial.print("\n");
+  
+  if(i < 6)
+  {
+    tLecturas += valorPot; 
+    i++; 
+  }
+  
+  if(i == 6)
+  {
+    tLecturas = tLecturas/7; 
+  	Serial.print("Promedio de 7 lecturas: "); 
+    Serial.print(tLecturas); 
+    Serial.print("\n"); 
+  }
+  
+  if(tLecturas - tLecturasAnterior >= 300 || tLecturas - tLecturasAnterior <= -300) 
+  {
+    digitalWrite(ledRojo, HIGH); 
+
+    //sistema de redundancia de bajo nivel 
+    Serial.print("Lectura original de pot 2: ");
+    Serial.print(analogRead(potPin2));
+    Serial.print(", Lectura con ruido de pot 2: ");
+    Serial.println(valorPot2);
+    Serial.print("\n");
+  }
+  else 
+  {
+    digitalWrite(ledRojo, LOW); 
+  }
+
+  tLecturasAnterior = tLecturas; 
+  tLecturas = 0; 
+  i = 0; 
+
+  //sistema de redundancia de alto nivel 
+  if(j < 6)
+  {
+    tLecturas2 += valorPot3; 
+    j++; 
+  }
+  
+  if(j == 6)
+  {
+    tLecturas2 = tLecturas2/7; 
+  	Serial.print("Promedio de 7 lecturas de segundo sistema: "); 
+    Serial.print(tLecturas2); 
+    Serial.print("\n"); 
+  }
+  
+  if(tLecturas2 - tLecturasAnterior2 >= 300 || tLecturas2 - tLecturasAnterior2 <= -300) 
+  {
+    digitalWrite(ledRojo, HIGH); 
+    
+    Serial.print("Lectura original de pot 3: ");
+    Serial.print(analogRead(potPin3));
+    Serial.print(", Lectura con ruido de pot 3: ");
+    Serial.println(valorPot3);
+    Serial.print("\n");
+  }
+  else 
+  {
+    digitalWrite(ledRojo, LOW); 
+  }
+
+  tLecturasAnterior2 = tLecturas2; 
+  tLecturas2 = 0; 
+  j = 0; 
+  
+
+  delay(500);  // Pausa para una mejor legibilidad en el monitor serial
+}
+
+//https://www.tinkercad.com/things/9lpRjAb5Szb-t1des?sharecode=hZYl6Mt35MsHqAO_CAm4nShrn0Jy9BYMl-ukDYl-3lM
